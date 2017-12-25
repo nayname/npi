@@ -43,7 +43,6 @@ def evaluate_addition():
 
 
 def repl(session, npi, data):
-    while True:
         inpt = raw_input('Enter Numbers, or Hit Enter for Random Pair: ')
 
         if inpt == "":
@@ -51,6 +50,15 @@ def repl(session, npi, data):
 
         else:
             x, y = map(int, inpt.split())
+
+        f = open('/root/npi/numbers.txt', 'r+')
+        f.truncate()
+
+        f = open('/root/npi/prog.txt', 'r+')
+        f.truncate()
+
+        with open("/root/npi/numbers.txt", "a") as myfile:
+            myfile.write(str(x)+","+str(y) + "\n")
 
         # Reset NPI States
         print ""
@@ -61,8 +69,9 @@ def repl(session, npi, data):
         prog_name, prog_id, term = 'ADD', 2, False
 
         cont = 'c'
-        while cont == 'c' or cont == 'C':
 
+        while cont == 'c' or cont == 'C':
+            #Previous step
             if prog_id == MOVE_PID or prog_id == WRITE_PID:
                 arg = [np.argmax(n_args[0]), np.argmax(n_args[1])]
             else:
@@ -92,11 +101,15 @@ def repl(session, npi, data):
             scratch.pretty_print()
 
             # Get Environment, Argument Vectors
+            # Current step
             env_in, arg_in, prog_in = [scratch.get_env()], [get_args(arg, arg_in=True)], [[prog_id]]
             t, n_p, n_args = session.run([npi.terminate, npi.program_distribution, npi.arguments],
                                          feed_dict={npi.env_in: env_in, npi.arg_in: arg_in,
                                                     npi.prg_in: prog_in})
+            with open("/root/npi/prog.txt", "a") as myfile:
+                myfile.write(prog_id + "\n")
 
+            # Next step
             if np.argmax(t) == 1:
                 print 'Step: %s, Arguments: %s, Terminate: %s' % (prog_name, a_str, str(True))
                 print 'IN 1: %s, IN 2: %s, CARRY: %s, OUT: %s' % (scratch.in1_ptr[1],
@@ -114,11 +127,15 @@ def repl(session, npi, data):
                 print "Model Output: %s + %s = %s" % (str(x), str(y), str(output))
                 print "Correct Out : %s + %s = %s" % (str(x), str(y), str(x + y))
                 print "Correct!" if output == (x + y) else "Incorrect!"
+                cont = "n"
 
             else:
                 prog_id = np.argmax(n_p)
                 prog_name = PROGRAM_SET[prog_id][0]
-                print(prog_id, prog_name, n_p, np.argmax(n_args[0]), np.argmax(n_args[1]))
                 term = False
 
-            cont = raw_input('Continue? ')
+            # cont = raw_input('Continue? ')
+
+        with open("/root/npi/prog.txt", "a") as comm:
+            if prog_id == MOVE_PID or prog_id == WRITE_PID:
+                scratch.execute(prog_id, arg)
