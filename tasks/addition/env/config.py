@@ -134,6 +134,7 @@ class ScratchPad():           # Addition Environment
             self.ptrs = [self.in1_ptr, self.in2_ptr, self.carry_ptr, self.out_ptr]
         elif prog_id == 1:             # WRITE!
             ptr, val = args
+            print(ptr, val)
             if ptr == 0:
                 self[self.out_ptr] = val
             elif ptr == 1:

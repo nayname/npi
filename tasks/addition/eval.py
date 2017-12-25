@@ -40,7 +40,7 @@ def evaluate_addition():
 
         # Run REPL
         repl(sess, npi, data)
-
+        repeat()
 
 def repl(session, npi, data):
         inpt = raw_input('Enter Numbers, or Hit Enter for Random Pair: ')
@@ -97,6 +97,10 @@ def repl(session, npi, data):
             if prog_id == MOVE_PID or prog_id == WRITE_PID:
                 scratch.execute(prog_id, arg)
 
+            if arg:
+                with open("/root/npi/prog.txt", "a") as myfile:
+                    myfile.write(str(prog_id) + "," + str(np.argmax(n_args[0])) + "," + str(np.argmax(n_args[1])) + "\n")
+
             # Print Environment
             scratch.pretty_print()
 
@@ -106,8 +110,6 @@ def repl(session, npi, data):
             t, n_p, n_args = session.run([npi.terminate, npi.program_distribution, npi.arguments],
                                          feed_dict={npi.env_in: env_in, npi.arg_in: arg_in,
                                                     npi.prg_in: prog_in})
-            with open("/root/npi/prog.txt", "a") as myfile:
-                myfile.write(prog_id + "\n")
 
             # Next step
             if np.argmax(t) == 1:
@@ -117,11 +119,8 @@ def repl(session, npi, data):
                                                                   scratch.carry_ptr[1],
                                                                   scratch.out_ptr[1])
                 # Update Environment if MOVE or WRITE
-                if prog_id == MOVE_PID or prog_id == WRITE_PID:
-                    scratch.execute(prog_id, arg)
-
-                # Print Environment
-                scratch.pretty_print()
+                # if prog_id == MOVE_PID or prog_id == WRITE_PID:
+                #     scratch.execute(prog_id, arg)
 
                 output = int("".join(map(str, map(int, scratch[3]))))
                 print "Model Output: %s + %s = %s" % (str(x), str(y), str(output))
@@ -136,6 +135,19 @@ def repl(session, npi, data):
 
             # cont = raw_input('Continue? ')
 
-        with open("/root/npi/prog.txt", "a") as comm:
+def repeat():
+        with open("/root/npi/numbers.txt", 'r') as f:
+            fl = f.readline()
+            x, y = fl.rstrip('\n').split(",")
+            print(x,y)
+            scratch = ScratchPad(x, y)
+
+        lines = [line.rstrip('\n') for line in open("/root/npi/prog.txt")]
+
+        for c in lines:
+            prog_id, arg0, arg1 = map(int, c.rstrip('\n').split(","))
+
             if prog_id == MOVE_PID or prog_id == WRITE_PID:
-                scratch.execute(prog_id, arg)
+                scratch.execute(prog_id, [arg0, arg1])
+            # Print Environment
+            scratch.pretty_print()
