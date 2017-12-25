@@ -53,14 +53,13 @@ def train_addition(epochs, verbose=0):
             in1, in2, steps = data[i]
             scratch = ScratchPad(in1, in2)
             x, y = steps[:-1], steps[1:]
-
             # Run through steps, and fit!
             step_def_loss, step_arg_loss, term_acc, prog_acc, = 0.0, 0.0, 0.0, 0.0
             arg0_acc, arg1_acc, arg2_acc, num_args = 0.0, 0.0, 0.0, 0
             for j in range(len(x)):
                 (prog_name, prog_in_id), arg, term = x[j]
                 (_, prog_out_id), arg_out, term_out = y[j]
-
+                # print(x[j], y[j])
                 # Update Environment if MOVE or WRITE
                 if prog_in_id == MOVE_PID or prog_in_id == WRITE_PID:
                     scratch.execute(prog_in_id, arg)
@@ -79,6 +78,8 @@ def train_addition(epochs, verbose=0):
                                    npi.y_prog: prog_out, npi.y_term: term_out,
                                    npi.y_args[0]: [arg_out[0]], npi.y_args[1]: [arg_out[1]],
                                    npi.y_args[2]: [arg_out[2]]})
+                    # print({npi.prg_in: prog_in, npi.y_prog: prog_out, npi.y_term: term_out})
+                    # print({npi.y_args[0]: [arg_out[0]], npi.y_args[1]: [arg_out[1]], npi.y_args[2]: [arg_out[2]]})
                     step_arg_loss += loss
                     term_acc += t_acc
                     prog_acc += p_acc
